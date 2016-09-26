@@ -201,7 +201,7 @@ function icg_csv_import_ui_get_form($step, $collection, &$form_state) {
         '#suffix' => '</div>',
         '#description' => t('Lorem ipsum.'),
         '#required' => FALSE,
-        '#options' => _icg_ajax_callback_xml_form($selected_cmodel, $xml_forms),
+        '#options' => _icg_csv_ui_ajax_callback_xml_form($selected_cmodel, $xml_forms),
       );
 
       $form['namespace'] = array(
@@ -211,7 +211,7 @@ function icg_csv_import_ui_get_form($step, $collection, &$form_state) {
         '#suffix' => '</div>',
         '#description' => t('Select an available destination namespace'),
         '#required' => TRUE,
-        '#options' => _icg_ajax_callback_ns_form($selected_cmodel, $namespaces),
+        '#options' => _icg_csv_ui_ajax_callback_ns_form($selected_cmodel, $namespaces),
       );
 
       $form['csv_delimiter'] = array(
@@ -364,11 +364,12 @@ function icg_csv_import_ui_get_form($step, $collection, &$form_state) {
 
       $form['submit'] = array(
         '#type' => 'submit',
-        '#value' => t('DO NOT CLICK ME'),
+        '#value' => t('Continue'),
       );
 
       return;
-      // OLD CODE....
+
+      // OLD CODE THAT IS NOT OFFICIALLY USED OR PART OF UI
 
       $values = $form_state['values'];
       _icg_csv_import_ui_convert_array_keys($values, '0', 'x');
@@ -394,6 +395,8 @@ function icg_csv_import_ui_get_form($step, $collection, &$form_state) {
         dpm($form);
       }
 
+      // END OLD CODE
+
       break;
 
   endswitch;
@@ -401,6 +404,7 @@ function icg_csv_import_ui_get_form($step, $collection, &$form_state) {
   return $form;
 }
 
+// EVERYTHING BELOW THIS LINE IS INHERITED AND NOT YET USED IN UI, POSSIBLY DEPRECATED.
 
 /**
  * @param $merged

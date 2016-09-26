@@ -67,7 +67,7 @@ function _icg_csv_import_ui_get_available_ingest_models(
  *
  * @return array
  */
-function _icg_ajax_callback_xml_form($selected_cmodel, $xml_forms) {
+function _icg_csv_ui_ajax_callback_xml_form($selected_cmodel, $xml_forms) {
   $ret = array();
 
   $cmodel_forms = $xml_forms[$selected_cmodel];
@@ -94,7 +94,7 @@ function _icg_ajax_callback_xml_form($selected_cmodel, $xml_forms) {
  *
  * @return array
  */
-function _icg_ajax_callback_ns_form($selected_cmodel, $namespaces) {
+function _icg_csv_ui_ajax_callback_ns_form($selected_cmodel, $namespaces) {
   $ret = array();
 
   $ns = $namespaces[$selected_cmodel];
@@ -129,6 +129,8 @@ function _icg_form_array_iterator_set_options_redux(&$array) {
     }
   }
 }
+
+// EVERYTHING BELOW THIS LINE IS INHERITED AND NOT YET USED IN UI, POSSIBLY DEPRECATED.
 
 /**
  * Iterates through a form array and replaces specific fields and their options.
