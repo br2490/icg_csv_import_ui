@@ -3,5 +3,4 @@ description = Islandora Consortial Group CSV Importer User Interface
 package = ICG Modules
 core = 7.x
 testing_api = 2.x
-dependencies[] = icg_csv_import
 files[] = tests/batch.test

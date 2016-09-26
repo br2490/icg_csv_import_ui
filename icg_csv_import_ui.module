@@ -1,5 +1,5 @@
 <?php
-
+// @TODO add +utilities: dependencies[] = icg_csv_import
 /**
  * Include batch.inc when module loads.  Required for batch processing!
  */
@@ -43,8 +43,8 @@ function icg_csv_import_ui_xml_form_builder_get_form_modify_definition_alter(&$f
  */
 function icg_csv_import_ui_menu() {
   $items = array();
-  $items['islandora/object/%islandora_object/manage/csv-import'] = array(
-    'title' => t('CSV Import'),
+  $items['islandora/object/%islandora_object/manage/csv-import-ui-alpha'] = array(
+    'title' => t('CSV Import (UI Alpha)'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('icg_csv_import_ui_form', 2),
     'access arguments' => array(2),
