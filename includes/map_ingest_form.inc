@@ -56,7 +56,10 @@ function icg_csv_import_ui_form_submit($form, &$form_state) {
     case 1:
       // This is our XML_FORM (objective form). Treat it nicely.
       dpm($form);
+      // XML_FORM final form declaration. i.e. a defined mods form ready to be processed by XML_Forms.
       $form_state['storage']['icg_xml_form'] = $form;
+      // XML_FORM final form values from the user - our pathway.
+      $form_state['storage']['icg_xml_values'] = $form_state['values'];
       // Do not submit the form
       $form_state['rebuild'] = TRUE;
       // Instead go to the next page.
@@ -65,28 +68,28 @@ function icg_csv_import_ui_form_submit($form, &$form_state) {
 
     case 2:
 
-      // Fetch defaults
-      $defaults = _fetch_CSV_defaults();
-
-      // Open the constants file, if any
-      if (isset($form_state['storage']['constants_csv'])) {
-        $constants = $form_state['storage']['constants_csv']->uri;
-        $delimiter = ($form_state['storage']['csv_delimiter'] ? $form_state['storage']['csv_delimiter'] : "\t");
-        if ($file_handle = fopen($constants, 'r')) {
-          $headers = fgetcsv($file_handle, 0, $delimiter);  // Read first line to get xpath/header info
-          $data = fgetcsv($file_handle, 0, $delimiter);     // Read the next line to get data
-          for ($i = 0; $i < count($headers); $i++) {  // Save the data in $form_state['storage']['constants']
-            $form_state['storage']['constants'][$headers[$i]] = $data[$i];
-          }
-          fclose($file_handle);  // Close file connection
-        }
-      }
-
-      // Do something with storage and redirect away from the form!
-      icg_csv_import_ui_build_batch($form_state);
-      if (module_exists('devel')) {
-        dpm($form_state);
-      }
+//      // Fetch defaults
+//      $defaults = _fetch_CSV_defaults();
+//
+//      // Open the constants file, if any
+//      if (isset($form_state['storage']['constants_csv'])) {
+//        $constants = $form_state['storage']['constants_csv']->uri;
+//        $delimiter = ($form_state['storage']['csv_delimiter'] ? $form_state['storage']['csv_delimiter'] : "\t");
+//        if ($file_handle = fopen($constants, 'r')) {
+//          $headers = fgetcsv($file_handle, 0, $delimiter);  // Read first line to get xpath/header info
+//          $data = fgetcsv($file_handle, 0, $delimiter);     // Read the next line to get data
+//          for ($i = 0; $i < count($headers); $i++) {  // Save the data in $form_state['storage']['constants']
+//            $form_state['storage']['constants'][$headers[$i]] = $data[$i];
+//          }
+//          fclose($file_handle);  // Close file connection
+//        }
+//      }
+//
+//      // Do something with storage and redirect away from the form!
+//      icg_csv_import_ui_build_batch($form_state);
+//      if (module_exists('devel')) {
+//        dpm($form_state);
+//      }
       break;
 
   endswitch;
@@ -268,24 +271,30 @@ function icg_csv_import_ui_get_form($step, $collection, &$form_state) {
           '#markup' => "<p>You have indicated that metadata XPaths are already mapped in the first row of the CSV file.  Click 'Next' to proceed.</p>",
         );
         $form_state['step']++;   // skip the mapping AND review forms
-        $form_state['storage'] += _fetch_CSV_defaults();
+        $form_state['storage'] += _fetch_CSV_defaults(); // THIS COMES FROM BATCH
         // Just leave the code early if this is true. Reducing nesting.
         break;
       }
-
       // Otherwise map CSV columns to metadata form elements.
+
+      global $_icg_csv_import_ui_glob; // Shame, shame, shame. :D.
+
+      //@TODO: RETHINK ALL OF THESE THINGS. SERIOUSLY. ALL.
 
       // A metadata form has been selected.  Fetch it's title and add it's data array to
       // $form_state['collection_policy']['selected']
       $selected_form = $form_state['storage']['xml_form'];
       $cmodel = $form_state['storage']['content_model'];
       $forms = $form_state['collection_policy']['forms'][$cmodel];
+
+      // What is this doing? Why? All of this data is available by default.
+      // @TODO: Is mfate using this data?
       foreach ($forms as $fdata) {
         if ($fdata['form_name'] === $selected_form) {
           $form_state['collection_policy']['selected'] = $fdata;
           $path = drupal_get_path('module', 'xml_form_builder');
           $form_state['storage']['transform'] = $path . '/transforms/' . $fdata['transform'];
-          $label_field = '/mods';
+          $label_field = '/mods'; // Why is this assumption being made?
           foreach ($fdata['title_field'] as $tfield) {
             $label_field .= '/' . $tfield;
           }
@@ -307,10 +316,11 @@ function icg_csv_import_ui_get_form($step, $collection, &$form_state) {
       $csv_prepared = icg_csv_load_csv_data($file->uri, $delimiter);
       $csv_parsed = icg_csv_parse_csv_data($csv_prepared);
 
+      // HOOK TO ADD MAPPABLE OPTIONS. <--- this.
       // Create an array of options for our form. Include an 'ignore' option.
       $mappable_options = array(
         NULL => 'Ignored Field',
-        "USE_CONSTANT" => 'Enter a constant value...',
+        "{#title}_CONSTANT" => 'Use a CONSTANT value across all records.',
       );
       foreach ($csv_parsed[0] as $column_heading) {
         $mappable_options[$column_heading] = $column_heading;
@@ -318,9 +328,6 @@ function icg_csv_import_ui_get_form($step, $collection, &$form_state) {
       }
       $form_state['storage']['mappable_options'] = $mappable_options;
 
-      // Grab the XML form the user selected as associated
-
-      global $_icg_csv_import_ui_glob; // Shame, shame, shame.
       // If this is our first run we must set the mappable options to our global.
       if (empty($_icg_csv_import_ui_glob['mappable_options'])) {
         $_icg_csv_import_ui_glob['mappable_options'] = $form_state['storage']['mappable_options'];
