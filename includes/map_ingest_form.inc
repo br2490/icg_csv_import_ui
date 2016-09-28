@@ -47,7 +47,7 @@ function icg_csv_import_ui_form_submit($form, &$form_state) {
     case 0:
       // Save our current values to storage.
       $form_state['storage'] += $form_state['values'];
-      // Do not submit the form
+      // Do not submit the form.
       $form_state['rebuild'] = TRUE;
       // Instead go to the next page.
       $form_state['step']++;
@@ -55,7 +55,6 @@ function icg_csv_import_ui_form_submit($form, &$form_state) {
 
     case 1:
       // This is our XML_FORM (objective form). Treat it nicely.
-      dpm($form);
       // XML_FORM final form declaration. i.e. a defined mods form ready to be processed by XML_Forms.
       $form_state['storage']['icg_xml_form'] = $form;
       // XML_FORM final form values from the user - our pathway.
@@ -118,12 +117,12 @@ function icg_csv_import_ui_form_ajax_callback($form, &$form_state) {
  * @throws \Exception
  */
 function icg_csv_import_ui_get_form($step, $collection, &$form_state) {
-  $form = array();
-
   // Since this is used frequently in here, we include it universally for each
   // form part.
   module_load_include('inc', 'icg_csv_import_ui', 'includes/utilities');
   module_load_include('inc', 'xml_forms', 'builder/includes/associations.form');
+
+  $form = array();
 
   if (!isset($form_state['collection_policy'])) {
     // This will throw an error if no CPOLICY.
@@ -158,7 +157,7 @@ function icg_csv_import_ui_get_form($step, $collection, &$form_state) {
         '#size' => 200,
         '#required' => TRUE,
         '#default_value' => TRUE,
-      );
+        );
 
       $form['constants_csv'] = array(
         '#name' => 'files[constants_csv]',
@@ -167,7 +166,6 @@ function icg_csv_import_ui_get_form($step, $collection, &$form_state) {
         '#description' => t('Allowed file types are .csv, .tsv and .txt'),
         '#size' => 200,
         '#required' => FALSE,
-        // '#default_value' => TRUE,
       );
 
       $form['options_fieldset'] = array(
@@ -281,27 +279,27 @@ function icg_csv_import_ui_get_form($step, $collection, &$form_state) {
 
       //@TODO: RETHINK ALL OF THESE THINGS. SERIOUSLY. ALL.
 
-      // A metadata form has been selected.  Fetch it's title and add it's data array to
-      // $form_state['collection_policy']['selected']
-      $selected_form = $form_state['storage']['xml_form'];
-      $cmodel = $form_state['storage']['content_model'];
-      $forms = $form_state['collection_policy']['forms'][$cmodel];
-
-      // What is this doing? Why? All of this data is available by default.
-      // @TODO: Is mfate using this data?
-      foreach ($forms as $fdata) {
-        if ($fdata['form_name'] === $selected_form) {
-          $form_state['collection_policy']['selected'] = $fdata;
-          $path = drupal_get_path('module', 'xml_form_builder');
-          $form_state['storage']['transform'] = $path . '/transforms/' . $fdata['transform'];
-          $label_field = '/mods'; // Why is this assumption being made?
-          foreach ($fdata['title_field'] as $tfield) {
-            $label_field .= '/' . $tfield;
-          }
-          $form_state['storage']['label_field'] = $label_field;
-          break;
-        }
-      }
+//      // A metadata form has been selected.  Fetch it's title and add it's data array to
+//      // $form_state['collection_policy']['selected']
+//      $selected_form = $form_state['storage']['xml_form'];
+//      $cmodel = $form_state['storage']['content_model'];
+//      $forms = $form_state['collection_policy']['forms'][$cmodel];
+//
+//      // What is this doing? Why? All of this data is available by default.
+//      // @TODO: Is mfate using this data?
+//      foreach ($forms as $fdata) {
+//        if ($fdata['form_name'] === $selected_form) {
+//          $form_state['collection_policy']['selected'] = $fdata;
+//          $path = drupal_get_path('module', 'xml_form_builder');
+//          $form_state['storage']['transform'] = $path . '/transforms/' . $fdata['transform'];
+//          $label_field = '/mods'; // Why is this assumption being made?
+//          foreach ($fdata['title_field'] as $tfield) {
+//            $label_field .= '/' . $tfield;
+//          }
+//          $form_state['storage']['label_field'] = $label_field;
+//          break;
+//        }
+//      }
 
       // Load our CSV parser.
       module_load_include('inc', 'icg_csv_import_ui', 'includes/csv');
@@ -318,13 +316,13 @@ function icg_csv_import_ui_get_form($step, $collection, &$form_state) {
 
       // HOOK TO ADD MAPPABLE OPTIONS. <--- this.
       // Create an array of options for our form. Include an 'ignore' option.
-      $mappable_options = array(
-        NULL => 'Ignored Field',
-        "{#title}_CONSTANT" => 'Use a CONSTANT value across all records.',
-      );
+      $mappable_options = array();
+
+      $i = 0;
       foreach ($csv_parsed[0] as $column_heading) {
-        $mappable_options[$column_heading] = $column_heading;
+        $mappable_options['#csv.column.'.$i.'.data'] = $column_heading;
         $form_state['storage']['csvColumns'][] = $column_heading;
+        $i++;
       }
       $form_state['storage']['mappable_options'] = $mappable_options;
 

@@ -62,6 +62,7 @@ function _icg_csv_import_ui_get_available_ingest_models(
 /**
  * Small callback for ajax to get associated forms.
  *
+ * @icg_memeber br2490
  * @param $selected_cmodel
  * @param $xml_forms
  *
@@ -112,11 +113,27 @@ function _icg_form_array_iterator_set_options_redux(&$array) {
   //ASSERT OUR GLOBALS EXIST.
   global $_icg_csv_import_ui_glob;
 
+  if (empty($_icg_csv_import_ui_glob)) {
+    throw new Exception('The goggles, they do NOTHING. Like this exception.');
+  }
+
   if (isset($array['#type'])
     && in_array($array['#type'], $_icg_csv_import_ui_glob['manipulable_fields'])
   ) {
     $array['#type'] = 'select';
-    $array['#options'] = $_icg_csv_import_ui_glob['mappable_options'];
+
+    $path = !empty($array['#actions']['read']['path']) ? $array['#actions']['read']['path'] : $array['#title'];
+    $static_options = array(
+      NULL => 'Ignored Field',
+      '#csv.constant.field.' . $path => 'Use a constant value across all "' . $path . '" records.',
+    );
+    // @TODO: ANOTHER HOOK HERE WOULD BE DELICIOUS.
+
+    $options = array_merge($static_options,
+      $_icg_csv_import_ui_glob['mappable_options']);
+
+    $array['#options'] = $options;
+
     // Do we want to append something to the description as help text?
   }
   else {
